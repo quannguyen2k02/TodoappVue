@@ -8,17 +8,23 @@
         @keyup.enter="createTask(newTask)">
       <button type="button" class="btn btn-success" @click="createTask(newTask)">Add</button>
     </div>
-    <div class="d-flex w-50 my-2">
-      <input type="text" placeholder="Search..." v-model="query" required class="form-control"
-      @input="searchTasksDebounce(query)">
-      <button type="button" class="btn btn-success" @click="searchTasks(query)">Search</button>
+    <div class="d-flex  my-2">
+      <input type="text" placeholder="Search..." v-model="query" required class="form-control w-25"
+        @input="searchTasksDebounce(query)">
+      <button type="button " class="btn btn-success w-10" @click="searchTasks(query)">Search</button>
+
+      <select v-model="selectedStatus" @change="filterTasks" class="form-select w-25 ms-auto" aria-label="Default select example">
+        <option value="all" selected>All tasks</option>
+        <option value="doing">Doing</option>
+        <option value="done">Done</option>
+      </select>
     </div>
-    <TaskItem :task=tasks @handleFinishTask="handleFinishTask" 
-       @handleDeleteTask="handleDeleteTask" @onCheckboxChange="handleFinishTask" />
-    
+    <TaskItem :task=tasks @handleFinishTask="handleFinishTask" @handleDeleteTask="handleDeleteTask"
+      @onCheckboxChange="handleFinishTask" />
+
   </div>
 
-  
+
 </template>
 
 <script setup>
@@ -35,6 +41,7 @@ const newTask = ref("");
   const tasks = ref([]);
   const error = ref("");
   const query = ref("");
+  const selectedStatus = ref("all");
   //Create Task
 const createTask = async(titleTask) =>{
   try {
@@ -119,8 +126,37 @@ try {
   console.error(err);
 }
 };
-
-
+//fetch doing tasks
+const getDoingTasks = async()=>{
+  try {
+    const response = await todoService.getDoingTasks();
+    tasks.value = response.data;
+  } catch (err) {
+    error.value = "Failed to fetch tasks: " + err.message; // Lưu lỗi nếu xảy ra
+    console.error(err);
+  }
+}
+//fetch finished tasks
+const getFinishedTasks = async()=>{
+  try {
+    const response = await todoService.getFinishedTasks();
+    tasks.value = response.data;
+  } catch (err) {
+    error.value = "Failed to fetch tasks: " + err.message; // Lưu lỗi nếu xảy ra
+    console.error(err);
+  }
+}
+const filterTasks = function(){
+  if(selectedStatus.value =='all'){
+    fetchTasks();
+  }
+  if(selectedStatus.value=='doing'){
+    getDoingTasks();
+  }
+  if(selectedStatus.value == 'done'){
+    getFinishedTasks();
+  }
+}
 </script>
 <style scoped>
   .container{

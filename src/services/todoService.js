@@ -22,3 +22,9 @@ export const changeStatusTask = async(id) => {
 export const searchTasksByQuery = async(data) => {
     return await httpRequest.get(`${endpoint}/${data}`);
 }
+export const getDoingTasks = async() => {
+    return await httpRequest.get(`${endpoint}/doingtasks`);
+}
+export const getFinishedTasks = async() => {
+    return await httpRequest.get(`${endpoint}/finishedtasks`);
+}
