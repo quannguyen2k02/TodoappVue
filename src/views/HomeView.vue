@@ -4,20 +4,24 @@
     <h2 class="text-center mt-5">To do list</h2>
     <!-- Input -->
     <div class="d-flex">
-      <input type="text" placeholder="Enter task" v-model="newTask"  required class="form-control"
+      <input type="text" placeholder="Enter task" v-model="newTask" required class="form-control"
         @keyup.enter="createTask(newTask)">
       <button type="button" class="btn btn-success" @click="createTask(newTask)">Add</button>
     </div>
-    
-        <TaskItem :task=tasks @handleFinishTask="handleFinishTask" @handleFinishTasks="handleFinishTasks" @handleDeleteTasks="handleDeleteTasks" @handleDeleteTask="handleDeleteTask" />
 
+    <TaskItem :task=tasks @handleFinishTask="handleFinishTask" @handleFinishTasks="handleFinishTasks"
+      @handleDeleteTasks="handleDeleteTasks" @handleDeleteTask="handleDeleteTask" @onCheckboxChange="handleFinishTask" />
+    
   </div>
+
+  
 </template>
 
 <script setup>
   import TaskItem from "@components/TaskItem.vue"
-  import {ref , onBeforeMount, onMounted} from 'vue'
+  import {ref , onMounted} from 'vue'
   import * as todoService from '@/services/todoService'
+  import debounce from "lodash/debounce"
 
 onMounted(() => {
   fetchTasks();
@@ -50,29 +54,29 @@ const fetchTasks = async () => {
   }
 };
 //finishTasks
-const handleFinishTasks = async (selectedIds) => {
-  try {
-    const response = await todoService.finishTasksAsync(selectedIds);
-    tasks.value = response.data;
-    fetchTasks();
-  } catch (err) {
-    error.value = "Failed to fetch tasks: " + err.message; // Lưu lỗi nếu xảy ra
-    console.error(err);
-  }
-};
+// const handleFinishTasks = async (selectedIds) => {
+//   try {
+//     const response = await todoService.finishTasksAsync(selectedIds);
+//     tasks.value = response.data;
+//     fetchTasks();
+//   } catch (err) {
+//     error.value = "Failed to fetch tasks: " + err.message; // Lưu lỗi nếu xảy ra
+//     console.error(err);
+//   }
+// };
 
-//deleteTasks
-const handleDeleteTasks = async (selectedIds) => {
+// //deleteTasks
+// const handleDeleteTasks = async (selectedIds) => {
 
-  try {
-    const response = await todoService.deleteTasksAsync(selectedIds);
-    tasks.value = response.data;
-    fetchTasks();
-  } catch (err) {
-    error.value = "Failed to fetch tasks: " + err.message; // Lưu lỗi nếu xảy ra
-    console.error(err);
-  }
-};
+//   try {
+//     const response = await todoService.deleteTasksAsync(selectedIds);
+//     tasks.value = response.data;
+//     fetchTasks();
+//   } catch (err) {
+//     error.value = "Failed to fetch tasks: " + err.message; // Lưu lỗi nếu xảy ra
+//     console.error(err);
+//   }
+// };
 //DeleteTask
 const handleDeleteTask = async (id) => {
 
@@ -89,7 +93,7 @@ const handleDeleteTask = async (id) => {
 const handleFinishTask = async (id) => {
 
 try {
-  const response = await todoService.finishTaskAsync(id);
+  const response = await todoService.changeStatusTask(id);
   tasks.value = response.data;
   fetchTasks();
 } catch (err) {
@@ -97,6 +101,8 @@ try {
   console.error(err);
 }
 };
+
+
 </script>
 <style scoped>
   .container{

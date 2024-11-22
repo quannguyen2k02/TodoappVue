@@ -16,6 +16,6 @@ export const deleteTasksAsync = async(ids) => {
 export const deleteTaskAsync = async(id) => {
     return await httpRequest.remove(`${endpoint}/${id}`);
 }
-export const finishTaskAsync = async(id) => {
+export const changeStatusTask = async(id) => {
     return await httpRequest.put(`${endpoint}/${id}`);
 }
