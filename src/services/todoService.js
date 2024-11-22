@@ -19,3 +19,6 @@ export const deleteTaskAsync = async(id) => {
 export const changeStatusTask = async(id) => {
     return await httpRequest.put(`${endpoint}/${id}`);
 }
+export const searchTasksByQuery = async(data) => {
+    return await httpRequest.get(`${endpoint}/${data}`);
+}
