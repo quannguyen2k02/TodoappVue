@@ -4,23 +4,25 @@
     <h2 class="text-center mt-5">To do list</h2>
     <!-- Input -->
     <div class="d-flex">
-      <input type="text" placeholder="Enter task" v-model="newTask" required class="form-control"
+      <input type="text" placeholder="Enter task" v-model="newTask" class="form-control"
         @keyup.enter="createTask(newTask)">
       <button type="button" class="btn btn-success" @click="createTask(newTask)">Add</button>
     </div>
     <div class="d-flex  my-2">
       <input type="text" placeholder="Search..." v-model="query" required class="form-control w-25"
-        @input="searchTasksDebounce(query)">
+        @input="searchTasksDebounce(query,selectedStatus)">
       <button type="button " class="btn btn-success w-10" @click="searchTasks(query)">Search</button>
 
-      <select v-model="selectedStatus" @change="filterTasks" class="form-select w-25 ms-auto" aria-label="Default select example">
+      <select v-model="selectedStatus" @change="filterTasks" class="form-select w-25 ms-auto"
+        aria-label="Default select example">
         <option value="all" selected>All tasks</option>
         <option value="doing">Doing</option>
         <option value="done">Done</option>
       </select>
     </div>
+
     <TaskItem :task=tasks @handleFinishTask="handleFinishTask" @handleDeleteTask="handleDeleteTask"
-      @onCheckboxChange="handleFinishTask" />
+      @onCheckboxChange="handleFinishTask" @handleEditTask = "handleEditTask" />
 
   </div>
 
@@ -44,7 +46,12 @@ const newTask = ref("");
   const selectedStatus = ref("all");
   //Create Task
 const createTask = async(titleTask) =>{
+
   try {
+    if (!newTask.value.trim()) {
+    alert("Task name is required!");
+    return;
+    }
     const taskData = { id: 0, title: titleTask}; 
     const response = await todoService.addAsync(taskData);
     tasks.value = response.data;
@@ -66,20 +73,26 @@ const fetchTasks = async () => {
   }
 };
 //search task
-const searchTasks = async (query) => {
-  try {
-    const response = await todoService.searchTasksByQuery(query);
-    tasks.value = response.data;
+  const searchTasks = async (query, status) => {
+    try {
+      // Tạo object params từ query và status
+      const params = { status ,query};
+      if (query) {
+        params.query = query; // Chỉ thêm status nếu có giá trị
+      }
 
-  } catch (err) {
-    error.value = "Failed to fetch tasks: " + err.message; // Lưu lỗi nếu xảy ra
-    console.error(err);
-  }
-}
-//search task debounce
-const searchTasksDebounce = debounce((query) => {
-  searchTasks(query);
-}, 1000)
+      // Gọi API với object params
+      const response = await todoService.searchTasksByQuery(params);
+      tasks.value = response.data; // Lưu danh sách task từ phản hồi API
+    } catch (err) {
+      error.value = "Failed to fetch tasks: " + err.message; // Lưu thông báo lỗi
+      console.error(err);
+    }
+  };
+  //search task debounce
+  const searchTasksDebounce = debounce((query,selectedStatus) => {
+    searchTasks(query, selectedStatus);
+  }, 1000)
 //finishTasks
 // const handleFinishTasks = async (selectedIds) => {
 //   try {
@@ -120,7 +133,7 @@ const handleFinishTask = async (id) => {
 
 try {
   const response = await todoService.changeStatusTask(id);
-    searchTasks(query.value);
+    searchTasks(query.value,selectedStatus.value);
 } catch (err) {
   error.value = "Failed to fetch tasks: " + err.message; // Lưu lỗi nếu xảy ra
   console.error(err);
@@ -157,6 +170,16 @@ const filterTasks = function(){
     getFinishedTasks();
   }
 }
+const handleEditTask = async(task)=>{
+  try {
+    const response = await todoService.updateTask(task);
+  searchTasks(query.value,selectedStatus.value);
+  } catch (err) {
+    error.value = "Failed to fetch tasks: " + err.message; // Lưu lỗi nếu xảy ra
+    console.error(err);
+  }
+}
+
 </script>
 <style scoped>
   .container{
