@@ -42,7 +42,7 @@
         <td class="text-center d-flex justify-content-end">
           <button 
             v-if="editingTaskId === item.id"
-            @click="saveEdit(item.id)" 
+            @click="saveEdit(item.id, item.isFinished)" 
             class="btn btn-success mx-2"
           >
             Save
@@ -64,6 +64,26 @@
       </tr>
     </tbody>
   </table>
+
+
+   <!-- Modal for Confirm Deletion -->
+   <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="deleteModalLabel">Confirm Deletion</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          Are you sure you want to delete this task?
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="button" class="btn btn-danger" @click="confirmDelete">Delete</button>
+        </div>
+      </div>
+    </div>
+  </div>
 </template>
 <script setup>
 import { ref } from 'vue';
@@ -111,8 +131,8 @@ const startEdit = (item) => {
 };
 
 // Hàm lưu thay đổi
-const saveEdit = (id) => {
-  emit('handleEditTask', { id, title: editingTitle.value }); // Gửi dữ liệu về thành phần cha
+const saveEdit = (id,isFinished) => {
+  emit('handleEditTask', { id, title: editingTitle.value,isFinished : isFinished }); // Gửi dữ liệu về thành phần cha
   editingTaskId.value = null; // Kết thúc chế độ chỉnh sửa
   editingTitle.value = ''; // Reset giá trị chỉnh sửa
 };
